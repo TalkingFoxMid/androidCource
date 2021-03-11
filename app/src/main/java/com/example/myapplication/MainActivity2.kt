@@ -9,13 +9,14 @@ import android.widget.TextView
 
 class MainActivity2 : AppCompatActivity() {
     private var value: Int? = 0
-
+    private lateinit var textView: TextView;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.value = intent.getIntExtra("value", 0)
             .let { getSquare(it) }
 
         setContentView(R.layout.activity_main2)
+        this.textView = this.findViewById(R.id.textView2)
         this.updateText()
         Log.i(TAG, "onCreate()")
     }
@@ -25,8 +26,7 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     fun updateText() {
-        var textView = this.findViewById<TextView>(R.id.textView2)
-        textView.text = this.value.toString()
+        this.textView.text = this.value.toString()
     }
     override fun onResume() {
         super.onResume()

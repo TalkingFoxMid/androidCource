@@ -12,12 +12,15 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.example.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private var value: Int = 0
+    private lateinit var textView: TextView;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        this.textView = this.findViewById(R.id.textView2)
         Log.i(TAG, "onCreate()")
     }
 
@@ -51,15 +54,14 @@ class MainActivity : AppCompatActivity() {
         return true
     }
     fun goSecondActivity(view: View) {
-        var intent = Intent(this, MainActivity2::class.java)
+        val intent = Intent(this, MainActivity2::class.java)
         intent.putExtra("value", this.value)
         startActivity(intent)
     }
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        var textView = this.findViewById<TextView>(R.id.textView2)
         this.value++
-        textView.text = this.value.toString()
+        this.textView.text = this.value.toString()
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
