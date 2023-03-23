@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">ComposedTrabbitHacker</string>
+    <string name="title_activity_habit_creator">HabitCreator</string>
+    <string name="add_habit_text">Добавление привычки</string>
+    <string name="create_habbit_name_placeholder">Название</string>
+    <string name="create_habbit_description_placeholder">Название</string>
+    <string name="create_habbit_select_type">Тип привычки</string>
+    <string name="create_habbit_select_priority">Приоритет привычки</string>
+    <string name="create_habbit_select_period_tries">Количество повторений</string>
+    <string name="create_habbit_select_period_days">Частота выполнения привычки в днях</string>
+    <string name="about_text">By AliceLoom</string>
+    <string name="app_name_informal">TrabbitHacker</string>
+
+</resources>
