@@ -20,10 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.talkingfox.composedtrabbithacker.domain.Habits
 import com.talkingfox.composedtrabbithacker.views.create.*
-import com.talkingfox.composedtrabbithacker.views.main.HabitCardElement
+import java.util.*
 
 @Composable
-fun CreateHabitView(items: SnapshotStateList<HabitCardElement>, habitId: Int?, backToMainScreen: () -> Unit) {
+fun CreateHabitView(
+    habit: Habits.Habit?,
+    backToMainScreen: () -> Unit,
+    createHabit: (Habits.Habit) -> Unit,
+    updateHabit: ((Habits.Habit, UUID) -> Unit)
+) {
     val name = remember { mutableStateOf("") }
     val desc = remember { mutableStateOf("") }
     val priority = remember { mutableStateOf(Habits.Priority.LOW) }
@@ -34,19 +39,38 @@ fun CreateHabitView(items: SnapshotStateList<HabitCardElement>, habitId: Int?, b
     val periodRetries = remember {
         mutableStateOf(0)
     }
-    val isSelected = remember {
-        mutableStateOf(false)
+
+    if(habit != null) {
+        name.value = habit.name
+        desc.value = habit.description
+        priority.value = habit.priority
+        type.value = habit.type
+        periodDays.value = habit.period.periodDays
+        periodRetries.value = habit.period.retries
     }
+
     Column() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.8f), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = stringResource(id = R.string.add_habit_text), fontSize = 30.sp, modifier = Modifier.padding(bottom = 15.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.add_habit_text),
+                fontSize = 30.sp,
+                modifier = Modifier.padding(bottom = 15.dp)
+            )
             Divider(color = Color.Black, thickness = 3.dp)
-            OutlinedTextField(value = name.value, placeholder = { Text(stringResource(id = R.string.create_habbit_name_placeholder)) }, onValueChange = {name.value = it})
+            OutlinedTextField(
+                value = name.value,
+                placeholder = { Text(stringResource(id = R.string.create_habbit_name_placeholder)) },
+                onValueChange = { name.value = it })
             Divider(color = Color.Black, thickness = 1.dp)
 
-            OutlinedTextField(value = desc.value, placeholder = { Text(stringResource(id = R.string.create_habbit_description_placeholder)) }, onValueChange = {desc.value = it})
+            OutlinedTextField(
+                value = desc.value,
+                placeholder = { Text(stringResource(id = R.string.create_habbit_description_placeholder)) },
+                onValueChange = { desc.value = it })
             Divider(color = Color.Black, thickness = 1.dp)
 
             SelectPriority(priority)
@@ -57,30 +81,28 @@ fun CreateHabitView(items: SnapshotStateList<HabitCardElement>, habitId: Int?, b
             SelectPeriod(periodDays, periodRetries)
 
         }
-        Box(contentAlignment = Alignment.Center, modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()) {
+        Box(
+            contentAlignment = Alignment.Center, modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
             FloatingActionButton(onClick = {
-                if(habitId != null) {
-                    val habitCardElement = items[habitId]
-                    habitCardElement.name.value = name.value
-                    habitCardElement.description.value = desc.value
-                    habitCardElement.priority.value = priority.value
-                    habitCardElement.type.value = type.value
-                    habitCardElement.periodDays.value = periodDays.value
-                    habitCardElement.periodRetries.value = periodRetries.value
-                    habitCardElement.isSelected.value = isSelected.value
-                } else {
-                    items.add(
-                        HabitCardElement(
-                            name, desc, priority, periodRetries, periodDays, type, isSelected
-                        )
+                if (habit != null) {
+                    val newHabit = Habits.Habit(
+                        habit.id, name.value, desc.value,
+                        priority.value, type.value, Habits.Period(periodRetries.value, periodDays.value)
                     )
+                    updateHabit(newHabit, habit.id)
+                } else {
+                    val newHabit = Habits.Habit(
+                        UUID.randomUUID(), name.value, desc.value,
+                        priority.value, type.value, Habits.Period(periodRetries.value, periodDays.value)
+                    )
+                    createHabit(newHabit)
                 }
                 backToMainScreen()
             }) {
-                Icon(Icons.Filled.Check,"", modifier = Modifier.size(30.dp))
-
+                Icon(Icons.Filled.Check, "", modifier = Modifier.size(30.dp))
             }
         }
     }

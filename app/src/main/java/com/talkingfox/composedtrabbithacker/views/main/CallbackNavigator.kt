@@ -2,16 +2,16 @@ package com.talkingfox.composedtrabbithacker.views.main
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.State
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.talkingfox.composedtrabbithacker.CreateHabitView
+import com.talkingfox.composedtrabbithacker.domain.Habits
+import java.util.*
 
-
-fun getCallbackNavigator(navController: NavHostController): CallbackNavigator =
+fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator =
     object: CallbackNavigator {
         val mainRoute = "mainRoute"
         val createHabitRoute = "createHabitRoute"
@@ -31,36 +31,43 @@ fun getCallbackNavigator(navController: NavHostController): CallbackNavigator =
             navController.navigate(createHabitRoute)
         }
 
-        override fun toEdit(id: Int) {
+        override fun toEdit(id: UUID) {
             navController.navigate("${createHabitRoute}/${id}")
         }
 
 
         @Composable
-        override fun GetNavHost(items: SnapshotStateList<HabitCardElement>) {
+        override fun GetNavHost(items: State<List<Habits.Habit>>, createHabit: (Habits.Habit) -> Unit,
+                                updateHabit: ((Habits.Habit, UUID) -> Unit), deleteHabit: (UUID) -> Unit){
             NavHost(navController = navController, startDestination = mainRoute) {
                 composable(aboutRoute) {
                     Text(text = stringResource(id = com.talkingfox.composedtrabbithacker.R.string.about_text))
                 }
 
                 composable(mainRoute) {
-                    MainView(
+                    HomeScreen(
                         items = items,
-                        {
-                            toCreate()
-                        },
-                        {
-                            toEdit(it)
-                        }
+                        { toCreate() },
+                        { toEdit(it) },
+                        { deleteHabit(it) }
                     )
                 }
 
                 composable(createHabitRoute) {
-                    CreateHabitView(items, null) { toMain() }
+                    CreateHabitView(null,
+                        {
+                            toMain()
+                        },{createHabit(it)},{h, uuid -> updateHabit(h, uuid)})
                 }
 
-                composable("${createHabitRoute}/{habitId}", arguments = listOf(navArgument("habitId"){type = NavType.IntType})) {
-                    CreateHabitView(items, it.arguments?.getInt("habitId")) { toMain() }
+                composable("${createHabitRoute}/{habitId}", arguments = listOf(navArgument("habitId"){type = NavType.StringType})) {
+                    val habitId = it.arguments?.getString("habitId")
+                    CreateHabitView(
+                        items.value.find {el -> el.id.toString() == habitId},
+                        {toMain()},
+                        {x -> createHabit(x)},
+                        {h, uuid -> updateHabit(h, uuid)}
+                    )
                 }
             }
         }
@@ -72,8 +79,9 @@ interface CallbackNavigator {
     fun toMain(): Unit
     fun toAbout(): Unit
     fun toCreate(): Unit
-    fun toEdit(id: Int): Unit
+    fun toEdit(id: UUID): Unit
 
     @Composable
-    fun GetNavHost(items: SnapshotStateList<HabitCardElement>)
+    fun GetNavHost(items: State<List<Habits.Habit>>, createHabit: (Habits.Habit) -> Unit,
+                   updateHabit: ((Habits.Habit, UUID) -> Unit), deleteHabit: (UUID) -> Unit)
 }

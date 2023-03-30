@@ -20,27 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-data class HabitCardElement(
-    val name: MutableState<String>,
-    val description: MutableState<String>,
-    val priority: MutableState<Habits.Priority>,
-    val periodRetries: MutableState<Int>,
-    val periodDays: MutableState<Int>,
-    val type: MutableState<Habits.HabitType>,
-    val isSelected: MutableState<Boolean>
-) {
-    fun core(): Habits.Habit =
-        Habits.Habit(
-            name = name.value,
-            description = description.value,
-            priority = priority.value,
-            type = type.value,
-            period = Habits.Period(periodRetries.value, periodDays.value)
-        )
-}
-
-fun colorFromType(type: Habits.HabitType): Color {
+import java.util.UUID
+private fun colorFromType(type: Habits.HabitType): Color {
     return when (type) {
         Habits.HabitType.BAD -> Color.Red
         Habits.HabitType.GOOD -> Color.Green
@@ -48,73 +29,95 @@ fun colorFromType(type: Habits.HabitType): Color {
     }
 }
 
+@Composable
+private fun CardButtons(isSelected: Boolean, toEdit: () -> Unit, delete: () -> Unit) {
+
+        Column() {
+            AnimatedVisibility(
+                isSelected
+            ){
+                FloatingActionButton(backgroundColor = Color.Gray, modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp)
+                    .padding(5.dp), onClick = { toEdit() }) {
+                    Icon(Icons.Filled.Settings, "", modifier = Modifier.size(32.dp))
+                }
+            }
+
+            AnimatedVisibility(
+                isSelected
+            ) {
+                FloatingActionButton(backgroundColor = Color.Gray, modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp)
+                    .padding(5.dp), onClick = {
+                    delete()
+                }) {
+                    Icon(Icons.Filled.Delete, "", modifier = Modifier.size(32.dp))
+                }
+            }
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun HabitComposable(hce: HabitCardElement, flushSelected: () -> Unit, toEdit: () -> Unit, delete: () -> Unit) {
-    val habit = hce.core()
-    val selected = hce.isSelected
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .height(120.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(15.dp),
-        elevation = 20.dp,
-        onClick = {
-            val isSelected = selected.value
-            flushSelected()
-            selected.value = !isSelected
-        }
-    ) {
-        Box() {
-            Row() {
-                Column(
-                    Modifier
-                        .background(colorFromType(habit.type))
-                        .fillMaxWidth(0.2f)
-                        .fillMaxHeight()) {
+fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: () -> Unit, delete: () -> Unit, visible: Boolean) {
+    val isSelected = hce.id == selected.value
+    AnimatedVisibility(visible){
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .height(120.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(15.dp),
+            elevation = 20.dp,
+            onClick = {
+                if (selected.value != hce.id) {
+                    selected.value = hce.id
+                } else {
+                    selected.value = null
                 }
-                Column(
-                    Modifier
-                        .fillMaxWidth(0.8f)
-                        .fillMaxHeight()
-                        .padding(10.dp)) {
-                    Text(text = habit.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
+            }
+        ) {
+            Box() {
+                Row() {
+                    Column(
+                        Modifier
+                            .background(colorFromType(hce.type))
+                            .fillMaxWidth(0.2f)
+                            .fillMaxHeight()
+                    ) {
+                    }
+                    Column(
+                        Modifier
+                            .fillMaxWidth(0.8f)
+                            .fillMaxHeight()
+                            .padding(10.dp)
+                    ) {
+                        Text(text = hce.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
 
-                    AnimatedVisibility(selected.value) {
-                        Text(text = habit.description, modifier = Modifier.weight(0.4f))
-                    }
-                    Divider(color = Color.Black, thickness = 1.dp)
-                    Row(modifier = Modifier.weight(0.2f)) {
-                        Text(text = habit.priority.toString(), modifier = Modifier.padding(start = 5.dp, end = 5.dp))
-                        Text(text = habit.type.toString(), modifier = Modifier.padding(start = 5.dp, end = 5.dp))
-                        Text(text = "${habit.period.retries} / ${habit.period.periodDays}", modifier = Modifier.padding(start = 5.dp, end = 5.dp))
-                    }
-                }
-                AnimatedVisibility(
-                    selected.value
-                ){
-                    Column() {
-                        FloatingActionButton(backgroundColor = Color.Gray, modifier = Modifier
-                            .width(48.dp)
-                            .height(48.dp)
-                            .padding(5.dp), onClick = { toEdit() }) {
-                            Icon(Icons.Filled.Settings,"", modifier = Modifier.size(32.dp))
+                        AnimatedVisibility(isSelected) {
+                            Text(text = hce.description, modifier = Modifier.weight(0.4f))
                         }
-
-                        FloatingActionButton(backgroundColor = Color.Gray, modifier = Modifier
-                            .width(48.dp)
-                            .height(48.dp)
-                            .padding(5.dp), onClick = {
-                            delete()
-                        }) {
-                            Icon(Icons.Filled.Delete,"", modifier = Modifier.size(32.dp))
+                        Divider(color = Color.Black, thickness = 1.dp)
+                        Row(modifier = Modifier.weight(0.2f)) {
+                            Text(
+                                text = hce.priority.toString(),
+                                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                            )
+                            Text(
+                                text = hce.type.toString(),
+                                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                            )
+                            Text(
+                                text = "${hce.period.retries} / ${hce.period.periodDays}",
+                                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                            )
                         }
                     }
+                    CardButtons(isSelected, toEdit, delete)
                 }
-
-
             }
         }
     }

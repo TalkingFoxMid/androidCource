@@ -1,6 +1,7 @@
 package com.talkingfox.composedtrabbithacker.domain
 
 import androidx.compose.ui.graphics.Color
+import java.util.UUID
 import kotlin.time.Duration
 
 
@@ -14,11 +15,12 @@ object Habits {
     }
 
     data class Habit(
-        val name: String,
-        val description: String,
-        val priority: Priority,
-        val type: HabitType,
-        val period: Period
+        var id: UUID,
+        var name: String,
+        var description: String,
+        var priority: Priority,
+        var type: HabitType,
+        var period: Period
     )
 
     data class Period(
