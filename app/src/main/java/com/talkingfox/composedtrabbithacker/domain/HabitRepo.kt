@@ -7,6 +7,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
 interface HabitRepo {
     fun addHabit(h: Habits.Habit): Unit
@@ -15,11 +17,12 @@ interface HabitRepo {
 
     fun replaceHabit(id: UUID, newHabit: Habits.Habit): Unit
 
-    fun liveData(): LiveData<List<Habits.Habit>>
+    fun habits(): List<Habits.Habit>
 }
 
-class HabitRepoInMemoryImpl : HabitRepo {
-    private val list = mutableStateListOf<Habits.Habit>()
+@Singleton
+class HabitRepoInMemoryImpl @Inject constructor() : HabitRepo {
+    private val list = mutableListOf<Habits.Habit>()
 
     override fun addHabit(h: Habits.Habit) {
         list.add(h)
@@ -31,6 +34,8 @@ class HabitRepoInMemoryImpl : HabitRepo {
         }
     }
 
+    override fun habits(): List<Habits.Habit> = list
+
     override fun replaceHabit(id: UUID, newHabit: Habits.Habit): Unit {
         val maybe = list.find { it.id == id }
         maybe?.name = newHabit.name
@@ -39,8 +44,4 @@ class HabitRepoInMemoryImpl : HabitRepo {
         maybe?.priority = newHabit.priority
         maybe?.type = newHabit.type
     }
-
-
-    override fun liveData(): LiveData<List<Habits.Habit>> =
-        MutableLiveData(list)
 }

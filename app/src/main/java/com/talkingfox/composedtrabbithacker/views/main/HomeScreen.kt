@@ -1,6 +1,5 @@
 package com.talkingfox.composedtrabbithacker.views.main
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,103 +12,157 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.talkingfox.composedtrabbithacker.domain.Habits
 import kotlinx.coroutines.launch
 import java.util.*
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
-fun HomeScreen(items: State<List<Habits.Habit>?>,
-               navigateCreateHabit: () -> Unit,
-               navigateEditHabit: (UUID) -> Unit,
-               deleteHabit: (UUID) -> Unit) {
+fun HomeScreen(
+    viewModel: HomeScreenViewModel, navigateCreateHabit: () -> Unit,
+    navigateEditHabit: (UUID) -> Unit
+) {
+    viewModel.reloadState()
+    val sheetState = rememberBottomSheetState(
+        initialValue = BottomSheetValue.Collapsed
+    )
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = sheetState
+    )
+    val state = viewModel.state.observeAsState()
+    val localState = state.value!!
     val landings = listOf("All", "Good", "Bad", "Neutral")
-    println(items.value)
     fun getFilterByIndex(i: Int): (Habits.Habit) -> Boolean {
-        return when(i) {
-            0 -> { _ -> true}
-            1 -> {hce -> hce.type == Habits.HabitType.GOOD}
-            2 -> {hce -> hce.type == Habits.HabitType.BAD}
-            3 -> {hce -> hce.type == Habits.HabitType.NEUTRAL}
+        return when (i) {
+            0 -> { _ -> true }
+            1 -> { hce -> hce.type == Habits.HabitType.GOOD }
+            2 -> { hce -> hce.type == Habits.HabitType.BAD }
+            3 -> { hce -> hce.type == Habits.HabitType.NEUTRAL }
             else -> { _ -> false }
         }
     }
-    val state = rememberPagerState()
+
+    val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
     val filterName = remember {
-      mutableStateOf("")
+        mutableStateOf("")
     }
 
-    Surface() {
-        Column() {
-            TabRow(selectedTabIndex = state.currentPage, backgroundColor = Color.Magenta, indicator = {
-                    tabPositions -> TabRowDefaults.Indicator(
-                Modifier.pagerTabIndicatorOffset(pagerState = state,tabPositions = tabPositions)
-            )
-            }) {
-                landings.forEachIndexed { index, s ->
-                    Tab(selected = state.currentPage == index, onClick = {
-                        scope.launch { state.animateScrollToPage(index) }
-                    }, text = {
-                        Text(text = landings[index])
-                    }, modifier = Modifier.background(
-                        color = if(state.currentPage == index) MaterialTheme.colors.primary else MaterialTheme.colors.primaryVariant
-                    ))
-                }
-            }
-
-
-            Column() {
-                Box(modifier = Modifier
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 10.dp,
+        sheetContent = {
+            Box(
+                modifier = Modifier
                     .fillMaxWidth()
+                    .height(250.dp)
                     .height(48.dp),
-                contentAlignment = Alignment.CenterEnd) {
-                    OutlinedTextField(modifier = Modifier.fillMaxWidth(),value = filterName.value, onValueChange = {filterName.value = it})
-                }
-                Divider(color = Color.Black, thickness = 1.dp)
-
-                HorizontalPager(pageCount = landings.size, state=state) {
-                        page ->  Box(modifier = Modifier.fillMaxHeight(0.8f)) {
-                    val itemsLocal = items.value
-                    val selected = remember {
-                        mutableStateOf<UUID?>(null)
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = filterName.value,
+                    onValueChange = { filterName.value = it })
+            }
+        }
+    ) {
+        Surface() {
+            Column() {
+                TabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    backgroundColor = Color.Magenta,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.Indicator(
+                            Modifier.pagerTabIndicatorOffset(
+                                pagerState = pagerState,
+                                tabPositions = tabPositions
+                            )
+                        )
+                    }) {
+                    landings.forEachIndexed { index, s ->
+                        Tab(selected = pagerState.currentPage == index, onClick = {
+                            scope.launch { pagerState.animateScrollToPage(index) }
+                        }, text = {
+                            Text(text = landings[index])
+                        }, modifier = Modifier.background(
+                            color = if (pagerState.currentPage == index) MaterialTheme.colors.primary else MaterialTheme.colors.primaryVariant
+                        )
+                        )
                     }
-                    LazyColumn {
-                        items(itemsLocal!!) { item ->
-                            HabitComposable(item, selected , toEdit = {navigateEditHabit(item.id)}, delete = {deleteHabit(item.id)},
-                            visible = getFilterByIndex(page)(item) && item.name.startsWith(filterName.value))
+                }
 
+
+                Column() {
+
+                    Divider(color = Color.Black, thickness = 1.dp)
+
+                    HorizontalPager(pageCount = landings.size, state = pagerState) { page ->
+                        Box(modifier = Modifier.fillMaxHeight(0.8f)) {
+                            val itemsLocal = localState.habits
+                            val selected = remember {
+                                mutableStateOf<UUID?>(null)
+                            }
+                            LazyColumn {
+                                items(itemsLocal!!) { item ->
+                                    HabitComposable(
+                                        item,
+                                        selected,
+                                        toEdit = { navigateEditHabit(item.id) },
+                                        delete = { viewModel.reduce(HomeScreenViewModel.HomeScreenViewModel.Events.DeleteHabit(item.id)) },
+                                        visible = getFilterByIndex(page)(item) && item.name.startsWith(
+                                            filterName.value
+                                        )
+                                    )
+
+
+                                }
+                            }
+                        }
+
+                    }
+
+                    Divider(color = Color.Black, thickness = 4.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(), contentAlignment = Alignment.Center
+                    ) {
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                           Row(
+                               Modifier
+                                   .fillMaxHeight()
+                                   .fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                               FloatingActionButton(onClick = {
+                                   navigateCreateHabit()
+                               }) {
+                                   Icon(Icons.Filled.Add, "", modifier = Modifier.size(30.dp))
+                               }
+                               FloatingActionButton(onClick = {
+                                   scope.launch{sheetState.expand()}
+                               }) {
+                                   Icon(Icons.Filled.Search, "", modifier = Modifier.size(30.dp))
+                               }
+                           }
 
                         }
                     }
+
+
                 }
-
-                }
-
-                Divider(color = Color.Black, thickness = 4.dp)
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(), contentAlignment = Alignment.Center) {
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        FloatingActionButton(onClick = {
-                            navigateCreateHabit()
-                        }) {
-                            Icon(Icons.Filled.Add,"", modifier = Modifier.size(30.dp))
-                        }
-
-                    }
-                }
-
-
             }
         }
     }
+
 
 }

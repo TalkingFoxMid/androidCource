@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import com.talkingfox.composedtrabbithacker.CreateHabitView
 import com.talkingfox.composedtrabbithacker.domain.Habits
 import java.util.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.talkingfox.composedtrabbithacker.views.create.CreateScreenViewModel
 
 fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator =
     object: CallbackNavigator {
@@ -37,37 +39,27 @@ fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator 
 
 
         @Composable
-        override fun GetNavHost(items: State<List<Habits.Habit>>, createHabit: (Habits.Habit) -> Unit,
-                                updateHabit: ((Habits.Habit, UUID) -> Unit), deleteHabit: (UUID) -> Unit){
+        override fun GetNavHost(){
             NavHost(navController = navController, startDestination = mainRoute) {
                 composable(aboutRoute) {
                     Text(text = stringResource(id = com.talkingfox.composedtrabbithacker.R.string.about_text))
                 }
 
                 composable(mainRoute) {
-                    HomeScreen(
-                        items = items,
-                        { toCreate() },
-                        { toEdit(it) },
-                        { deleteHabit(it) }
-                    )
+                    val viewModel = hiltViewModel<HomeScreenViewModel>()
+                    HomeScreen(viewModel, { toCreate() },
+                        { toEdit(it) })
                 }
 
                 composable(createHabitRoute) {
-                    CreateHabitView(null,
-                        {
-                            toMain()
-                        },{createHabit(it)},{h, uuid -> updateHabit(h, uuid)})
+                    val viewModel = hiltViewModel<CreateScreenViewModel>()
+                    CreateHabitView(viewModel, { toMain() },null)
                 }
 
                 composable("${createHabitRoute}/{habitId}", arguments = listOf(navArgument("habitId"){type = NavType.StringType})) {
                     val habitId = it.arguments?.getString("habitId")
-                    CreateHabitView(
-                        items.value.find {el -> el.id.toString() == habitId},
-                        {toMain()},
-                        {x -> createHabit(x)},
-                        {h, uuid -> updateHabit(h, uuid)}
-                    )
+                    val viewModel = hiltViewModel<CreateScreenViewModel>()
+                    CreateHabitView(viewModel, { toMain() }, UUID.fromString(habitId))
                 }
             }
         }
@@ -82,6 +74,5 @@ interface CallbackNavigator {
     fun toEdit(id: UUID): Unit
 
     @Composable
-    fun GetNavHost(items: State<List<Habits.Habit>>, createHabit: (Habits.Habit) -> Unit,
-                   updateHabit: ((Habits.Habit, UUID) -> Unit), deleteHabit: (UUID) -> Unit)
+    fun GetNavHost()
 }

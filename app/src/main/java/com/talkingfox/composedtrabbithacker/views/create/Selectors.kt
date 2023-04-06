@@ -21,7 +21,7 @@ import com.talkingfox.composedtrabbithacker.domain.Habits
 
 
 @Composable
-fun SelectPriority(selected: MutableState<Habits.Priority>) {
+fun SelectPriority(priority: Habits.Priority, setPriority: (Habits.Priority) -> Unit) {
     val expanded = remember { mutableStateOf(false) }
     val items = listOf(Habits.Priority.LOW, Habits.Priority.MEDIUM, Habits.Priority.HIGH)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -35,7 +35,7 @@ fun SelectPriority(selected: MutableState<Habits.Priority>) {
             Card(elevation = 15.dp,
                 shape = RoundedCornerShape(20.dp)
             ) {
-                Text(selected.value.toString(), modifier = Modifier
+                Text(priority.toString(), modifier = Modifier
                     .padding(15.dp)
                     .clickable(onClick = { expanded.value = true }),
                     textAlign = TextAlign.Center)
@@ -43,7 +43,7 @@ fun SelectPriority(selected: MutableState<Habits.Priority>) {
             DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = true }) {
                 items
                     .map {
-                        DropdownMenuItem(onClick = { selected.value = it; expanded.value = false }) {
+                        DropdownMenuItem(onClick = { setPriority(it); expanded.value = false }) {
                             Text(text = it.toString())
                         }
                     }
@@ -53,21 +53,21 @@ fun SelectPriority(selected: MutableState<Habits.Priority>) {
 }
 
 @Composable
-fun SelectType(type: MutableState<Habits.HabitType>) {
+fun SelectType(type: Habits.HabitType, setType: (Habits.HabitType) -> Unit) {
     val variance = listOf(Habits.HabitType.NEUTRAL, Habits.HabitType.BAD, Habits.HabitType.GOOD)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = stringResource(id = R.string.create_habbit_select_type), fontSize = 20.sp)
         Row() {
             variance.map {
                 Text(text = it.toString())
-                RadioButton(selected = type.value == it, onClick = { type.value = it })
+                RadioButton(selected = type == it, onClick = { setType(it) })
             }
         }
     }
 }
 
 @Composable
-fun SelectPeriod(periodDays: MutableState<Int>, periodRetries: MutableState<Int>) {
+fun SelectPeriod(period: Habits.Period, setPeriod: (Habits.Period) -> Unit) {
 
     Card(shape = RoundedCornerShape(15.dp),
         elevation = 20.dp,
@@ -80,14 +80,14 @@ fun SelectPeriod(periodDays: MutableState<Int>, periodRetries: MutableState<Int>
             Text(text = stringResource(id = R.string.create_habbit_select_period_days))
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(0.5f),
-                value = periodDays.value.toString(),
-                onValueChange = {periodDays.value = it.toInt()},
+                value = period.periodDays.toString(),
+                onValueChange = {setPeriod(Habits.Period(period.retries, it.toInt()))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Text(text = stringResource(id = R.string.create_habbit_select_period_tries))
             OutlinedTextField(modifier = Modifier.fillMaxWidth(0.5f),
-                value = periodRetries.value.toString(),
-                onValueChange = {periodRetries.value = it.toInt()},
+                value = period.retries.toString(),
+                onValueChange = {setPeriod(Habits.Period(it.toInt(), period.periodDays))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
         }
