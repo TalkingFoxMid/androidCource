@@ -32,14 +32,16 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel, navigateCreateHabit: () -> Unit,
     navigateEditHabit: (UUID) -> Unit
 ) {
-    viewModel.reloadState()
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed
     )
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
     )
-    val state = viewModel.state.observeAsState()
+    val state = viewModel.state.observeAsState(
+        HomeScreenViewModel.HomeScreenViewModel.HomeScreenState(
+            listOf()
+        ))
     val localState = state.value!!
     val landings = listOf("All", "Good", "Bad", "Neutral")
     fun getFilterByIndex(i: Int): (Habits.Habit) -> Boolean {
@@ -113,7 +115,7 @@ fun HomeScreen(
                                 mutableStateOf<UUID?>(null)
                             }
                             LazyColumn {
-                                items(itemsLocal!!) { item ->
+                                items(itemsLocal) { item ->
                                     HabitComposable(
                                         item,
                                         selected,

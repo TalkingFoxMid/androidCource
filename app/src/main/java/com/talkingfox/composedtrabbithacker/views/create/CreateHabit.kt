@@ -24,7 +24,7 @@ fun CreateHabitView(
     val state = viewModel.state.observeAsState()
     viewModel.reduce(CreateScreenViewModel.CreateScreenViewModel.Event.Initialize(habitUUID))
     val localState = state.value
-    if (localState != null) {
+    if (localState != null && localState is CreateScreenViewModel.CreateScreenViewModel.State.Modifying) {
         Column() {
             Column(
                 modifier = Modifier
