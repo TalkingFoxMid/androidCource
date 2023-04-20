@@ -1,9 +1,8 @@
-package com.talkingfox.composedtrabbithacker.dao
+package com.talkingfox.composedtrabbithacker.data.room
 
-import androidx.annotation.NonNull
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.talkingfox.composedtrabbithacker.dao.model.Habit
+import com.talkingfox.composedtrabbithacker.data.room.model.Habit
 import java.util.*
 
 @Dao

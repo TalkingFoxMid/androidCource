@@ -42,14 +42,14 @@ fun HomeScreen(
         HomeScreenViewModel.HomeScreenViewModel.HomeScreenState(
             listOf()
         ))
-    val localState = state.value!!
+    val localState = state.value
     val landings = listOf("All", "Good", "Bad", "Neutral")
     fun getFilterByIndex(i: Int): (Habits.Habit) -> Boolean {
         return when (i) {
             0 -> { _ -> true }
-            1 -> { hce -> hce.type == Habits.HabitType.GOOD }
-            2 -> { hce -> hce.type == Habits.HabitType.BAD }
-            3 -> { hce -> hce.type == Habits.HabitType.NEUTRAL }
+            1 -> { hce -> hce.data.type == Habits.HabitType.GOOD }
+            2 -> { hce -> hce.data.type == Habits.HabitType.BAD }
+            3 -> { hce -> hce.data.type == Habits.HabitType.NEUTRAL }
             else -> { _ -> false }
         }
     }
@@ -121,7 +121,7 @@ fun HomeScreen(
                                         selected,
                                         toEdit = { navigateEditHabit(item.id) },
                                         delete = { viewModel.reduce(HomeScreenViewModel.HomeScreenViewModel.Events.DeleteHabit(item.id)) },
-                                        visible = getFilterByIndex(page)(item) && item.name.startsWith(
+                                        visible = getFilterByIndex(page)(item) && item.data.name.startsWith(
                                             filterName.value
                                         )
                                     )

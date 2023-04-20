@@ -1,9 +1,7 @@
-package com.talkingfox.composedtrabbithacker.modules
+package com.talkingfox.composedtrabbithacker.data.room
 
 import android.content.Context
 import androidx.room.Room
-import com.talkingfox.composedtrabbithacker.dao.AppDatabase
-import com.talkingfox.composedtrabbithacker.dao.HabitDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,14 +15,4 @@ class DatabaseModule {
     @Provides
     fun providesHabitDao(appDatabase: AppDatabase): HabitDao =
         appDatabase.habitDao()
-
-    @Provides
-    @Singleton
-    fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase {
-        return Room.databaseBuilder(
-            appContext,
-            AppDatabase::class.java,
-            "RssReader"
-        ).build()
-    }
 }

@@ -1,4 +1,4 @@
-package com.talkingfox.composedtrabbithacker.dao.model
+package com.talkingfox.composedtrabbithacker.data.room.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -15,12 +15,16 @@ object Habits {
     }
 
     data class Habit(
-        var id: UUID,
-        var name: String,
-        var description: String,
-        var priority: Priority,
-        var type: HabitType,
-        var period: Period
+        val id: UUID,
+        val data: HabitData
+    )
+
+    data class HabitData(
+        val name: String,
+        val description: String,
+        val priority: Priority,
+        val type: HabitType,
+        val period: Period
     )
 
     data class Period(

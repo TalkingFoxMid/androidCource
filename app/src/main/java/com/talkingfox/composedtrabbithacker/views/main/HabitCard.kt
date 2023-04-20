@@ -84,7 +84,7 @@ fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: ()
                 Row() {
                     Column(
                         Modifier
-                            .background(colorFromType(hce.type))
+                            .background(colorFromType(hce.data.type))
                             .fillMaxWidth(0.2f)
                             .fillMaxHeight()
                     ) {
@@ -95,23 +95,23 @@ fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: ()
                             .fillMaxHeight()
                             .padding(10.dp)
                     ) {
-                        Text(text = hce.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
+                        Text(text = hce.data.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
 
                         AnimatedVisibility(isSelected) {
-                            Text(text = hce.description, modifier = Modifier.weight(0.4f))
+                            Text(text = hce.data.description, modifier = Modifier.weight(0.4f))
                         }
                         Divider(color = Color.Black, thickness = 1.dp)
                         Row(modifier = Modifier.weight(0.2f)) {
                             Text(
-                                text = hce.priority.toString(),
+                                text = hce.data.priority.toString(),
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                             Text(
-                                text = hce.type.toString(),
+                                text = hce.data.type.toString(),
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                             Text(
-                                text = "${hce.period.retries} / ${hce.period.periodDays}",
+                                text = "${hce.data.period.retries} / ${hce.data.period.periodDays}",
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                         }
