@@ -1,6 +1,6 @@
 package com.talkingfox.composedtrabbithacker.data.doubletap
 
-import com.talkingfox.composedtrabbithacker.domain.HabitRemoteStore
+import com.talkingfox.composedtrabbithacker.repository.ShortHabitRemoteStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,8 +15,8 @@ class DoubleTapModule {
 
     @Provides
     @Singleton
-    fun remoteStore(): HabitRemoteStore =
-        HabitDoubleTapStore(
+    fun remoteStore(): ShortHabitRemoteStore =
+        ShortHabitDoubleTapStore(
             Retrofit.Builder()
                 .baseUrl("https://droid-test-server.doubletapp.ru/api/")
                 .addConverterFactory(GsonConverterFactory.create())

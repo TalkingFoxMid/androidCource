@@ -1,5 +1,6 @@
 package com.talkingfox.composedtrabbithacker.data.room.model
 
 object params {
-    const val tableName = "habits"
+    const val habitsDataTableName = "habits"
+    const val habitCompletionTableName = "habitsCompletion"
 }

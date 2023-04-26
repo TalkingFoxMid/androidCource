@@ -81,7 +81,7 @@ fun SelectPeriod(period: Habits.Period, setPeriod: (Habits.Period) -> Unit) {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(0.5f),
                 value = period.periodDays.toString(),
-                onValueChange = {setPeriod(Habits.Period(period.retries, it.toInt()))},
+                onValueChange = {setPeriod(Habits.Period(period.retries, Habits.HabitPeriodDays(it.toInt())!!))},
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Text(text = stringResource(id = R.string.create_habbit_select_period_tries))

@@ -15,4 +15,8 @@ class DatabaseModule {
     @Provides
     fun providesTokenDao(appDatabase: AppDatabase): TokenDAO =
         appDatabase.tokenDao()
+
+    @Provides
+    fun provideHabitCompletionDao(appDatabase: AppDatabase): HabitCompletionsDAO =
+        appDatabase.habitCompletionsDao()
 }

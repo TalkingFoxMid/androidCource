@@ -24,10 +24,10 @@ fun CreateHabitView(
     backToMainScreen: () -> Unit,
     habitUUID: UUID?
 ) {
-    val state = viewModel.state.observeAsState()
+    val state = viewModel.state.collectAsState(ModelState.Uninitialized)
     viewModel.reduce(Event.Initialize(habitUUID))
     val localState = state.value
-    if (localState != null && localState is ModelState.Modifying) {
+    if (localState is ModelState.Modifying) {
         Column() {
             Column(
                 modifier = Modifier

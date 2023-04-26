@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "token")
-class Token {
+class TokenEntity {
     constructor() {
 
     }

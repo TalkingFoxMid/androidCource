@@ -10,5 +10,9 @@
     <string name="create_habbit_select_period_days">Частота выполнения привычки в днях</string>
     <string name="about_text">By AliceLoom</string>
     <string name="app_name_informal">TrabbitHacker</string>
+    <string name="toast_message_stopdoit">Хватит это делать!!!</string>
+    <string name="toast_message_megagood">Мегахорош!</string>
+    <string name="toast_message_bad_underflow">Можешь сделать еще %s раз</string>
+    <string name="toast_message_good_underflow">Стоит выполнить еще %s раз</string>
 
 </resources>

@@ -41,30 +41,30 @@ object lenses {
 
     }
 
-    val habitLens: Iso<Habits.Habit, HabitDTO> = object: Iso<Habits.Habit, HabitDTO> {
-        override fun to(a: Habits.Habit): HabitDTO =
+    val habitLens: Iso<Pair<Habits.HabitData, UUID>, HabitDTO> = object: Iso<Pair<Habits.HabitData, UUID>, HabitDTO> {
+        override fun to(a: Pair<Habits.HabitData, UUID>): HabitDTO =
             HabitDTO(
-                uid = a.id.toString(),
-                type = habitTypeLens.to(a.data.type),
-                priority = habitPriorityLens.to(a.data.priority),
-                frequency = a.data.period.periodDays,
-                count = a.data.period.retries,
-                description = a.data.description,
-                title = a.data.name,
-                date = a.data.creationDate
+                uid = a.second.toString(),
+                type = habitTypeLens.to(a.first.type),
+                priority = habitPriorityLens.to(a.first.priority),
+                frequency = a.first.period.periodDays.periodDays,
+                count = a.first.period.retries,
+                description = a.first.description,
+                title = a.first.name,
+                date = a.first.creationDate
             )
 
-        override fun from(a: HabitDTO): Habits.Habit {
-            return Habits.Habit(
-                id = UUID.fromString(a.uid),
+        override fun from(a: HabitDTO): Pair<Habits.HabitData, UUID> {
+            return Pair(
                 Habits.HabitData(
                     name = a.title,
                     description = a.description,
                     priority = habitPriorityLens.from(a.priority),
                     type = habitTypeLens.from(a.type),
-                    period = Habits.Period(a.count, a.frequency),
+                    period = Habits.Period(a.count, Habits.HabitPeriodDays(a.frequency)!!),
                     creationDate = a.date
-                )
+                ),
+                UUID.fromString(a.uid)
             )
         }
     }
@@ -74,7 +74,7 @@ object lenses {
             HabitDTO(
                 type = habitTypeLens.to(f.type),
                 priority = habitPriorityLens.to(f.priority),
-                frequency = f.period.periodDays,
+                frequency = f.period.periodDays.periodDays,
                 count = f.period.retries,
                 description = f.description,
                 title = f.name,
@@ -90,7 +90,7 @@ object lenses {
                 description = f.description,
                 priority = habitPriorityLens.to(f.priority),
                 type = habitTypeLens.to(f.type),
-                frequency = f.period.periodDays,
+                frequency = f.period.periodDays.periodDays,
                 count = f.period.retries,
                 date = 0
             )

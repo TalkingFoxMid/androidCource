@@ -10,6 +10,9 @@ import com.talkingfox.composedtrabbithacker.usecases.PreloadUseCase
 import com.talkingfox.composedtrabbithacker.usecases.TokenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +33,6 @@ class LoadViewModel @Inject constructor(private val tokenUseCases: TokenUseCases
                     } else {
                         viewModelScope.launch(Dispatchers.IO) {
                             val isPreloaded = preloadUseCase.preloadCache()
-                            println("PRELOADED: ${isPreloaded}")
                             if(isPreloaded) {
                                 viewModelScope.launch {
                                     mState.value = State.Ready
@@ -59,12 +61,11 @@ class LoadViewModel @Inject constructor(private val tokenUseCases: TokenUseCases
                     }
 
                 }
-
             }
         }
     }
 
-    private val mState: MutableLiveData<State> = MutableLiveData(State.Loading)
+    private val mState: MutableStateFlow<State> = MutableStateFlow(State.Loading)
 
-    val state: LiveData<State> = mState
+    val state: Flow<State> = mState
 }

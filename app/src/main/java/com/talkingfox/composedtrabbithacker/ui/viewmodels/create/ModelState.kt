@@ -1,9 +1,12 @@
 package com.talkingfox.composedtrabbithacker.ui.viewmodels.create
 
+import android.view.Display.Mode
 import com.talkingfox.composedtrabbithacker.domain.Habits
 import java.util.*
 
 sealed class ModelState {
+
+    object Uninitialized: ModelState()
     data class Modifying(
         val nameTextField: String,
         val descriptionTextField: String,
@@ -19,4 +22,5 @@ sealed class ModelState {
         data class EditHabit(val id: UUID): OperationType()
         object CreateHabit: OperationType()
     }
+
 }
