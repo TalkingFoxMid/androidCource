@@ -1,26 +1,29 @@
 package com.talkingfox.composedtrabbithacker.data.room
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.talkingfox.composedtrabbithacker.data.room.model.Habit
+import com.talkingfox.composedtrabbithacker.data.room.model.HabitEntity
 import com.talkingfox.composedtrabbithacker.data.room.model.params
+import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
 interface HabitDAO {
     @Insert
-    fun insertHabit(habit: Habit)
+    fun insertHabit(habitEntity: HabitEntity)
 
-    @Query("SELECT * FROM ${params.tableName}")
-    fun habits(): LiveData<List<Habit>>
+    @Query("SELECT * FROM ${params.habitsDataTableName}")
+    fun habitsFlow(): Flow<List<HabitEntity>>
 
-    @Update(entity = Habit::class)
-    fun replaceHabit(h: Habit)
+    @Query("SELECT * FROM ${params.habitsDataTableName}")
+    fun listHabits(): List<HabitEntity>
 
-    @Query("DELETE FROM ${params.tableName} WHERE uuid = :uuid")
+    @Update(entity = HabitEntity::class)
+    fun replaceHabit(h: HabitEntity)
+
+    @Query("DELETE FROM ${params.habitsDataTableName} WHERE uuid = :uuid")
     fun deleteHabit(uuid: UUID)
 
-    @Query("DELETE FROM ${params.tableName}")
+    @Query("DELETE FROM ${params.habitsDataTableName}")
     fun flushDatabase()
 
     @Transaction

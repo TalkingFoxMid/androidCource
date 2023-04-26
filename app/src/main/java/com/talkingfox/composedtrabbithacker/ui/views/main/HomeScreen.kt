@@ -15,7 +15,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.talkingfox.composedtrabbithacker.domain.Habits
-import com.talkingfox.composedtrabbithacker.repository.TokenRepository
 import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.Event
 import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.HomeScreenState
 import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.HomeScreenViewModel
@@ -45,7 +43,7 @@ fun HomeScreen(
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState
     )
-    val state = viewModel.state.observeAsState(
+    val state = viewModel.state.collectAsState(
         HomeScreenState(
             listOf()
         )
@@ -58,7 +56,7 @@ fun HomeScreen(
     })
     val localState = state.value
     val landings = listOf("All", "Good", "Bad")
-    fun getFilterByIndex(i: Int): (Habits.Habit) -> Boolean {
+    fun getFilterByIndex(i: Int): (Habits.ShortHabit) -> Boolean {
         return when (i) {
             0 -> { _ -> true }
             1 -> { hce -> hce.data.type == Habits.HabitType.GOOD }
@@ -122,7 +120,7 @@ fun HomeScreen(
 
                     HorizontalPager(pageCount = landings.size, state = pagerState) { page ->
                         Box(modifier = Modifier.fillMaxHeight(0.8f).pullRefresh(pullRefreshState)) {
-                            val itemsLocal = localState.habits
+                            val itemsLocal = localState.shortHabits
                             val selected = remember {
                                 mutableStateOf<UUID?>(null)
                             }
@@ -131,11 +129,18 @@ fun HomeScreen(
                                     HabitComposable(
                                         item,
                                         selected,
-                                        toEdit = { navigateEditHabit(item.id) },
-                                        delete = { viewModel.reduce(Event.DeleteHabit(item.id)) },
-                                        visible = getFilterByIndex(page)(item) && item.data.name.startsWith(
+                                        toEdit = { navigateEditHabit(item.shortHabit.id) },
+                                        delete = { viewModel.reduce(Event.DeleteHabit(item.shortHabit.id)) },
+                                        visible = getFilterByIndex(page)(item.shortHabit) && item.shortHabit.data.name.startsWith(
                                             filterName.value
-                                        )
+                                        ),
+                                        completeWithToastMessage = { cb ->
+                                            viewModel.reduce(
+                                                Event.Complete(
+                                                    item.shortHabit.id
+                                                ) { s -> cb(s) }
+                                            )
+                                        }
                                     )
 
 

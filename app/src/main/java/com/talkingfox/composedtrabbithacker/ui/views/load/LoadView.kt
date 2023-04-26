@@ -9,6 +9,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +25,9 @@ import com.talkingfox.composedtrabbithacker.ui.views.CallbackNavigator
 
 @Composable
 fun LoadView(viewModel: LoadViewModel, toMain: () -> Unit) {
-    val state = viewModel.state.observeAsState()
+    val state = viewModel.state.collectAsState(
+        State.Loading
+    )
     val curVal = state.value
     var passed = remember {
         mutableStateOf(false)

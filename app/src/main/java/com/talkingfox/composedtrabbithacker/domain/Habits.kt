@@ -1,8 +1,6 @@
 package com.talkingfox.composedtrabbithacker.domain
 
-import androidx.compose.ui.graphics.Color
 import java.util.UUID
-import kotlin.time.Duration
 
 
 object Habits {
@@ -14,9 +12,14 @@ object Habits {
         BAD, GOOD
     }
 
-    data class Habit(
+    data class ShortHabit(
         val id: UUID,
-        val data: HabitData
+        val data: HabitData,
+    )
+
+    data class DetailedHabit(
+        val shortHabit: ShortHabit,
+        val completions: List<HabitCompletion>
     )
 
     data class HabitData(
@@ -25,11 +28,16 @@ object Habits {
         val priority: Priority,
         val type: HabitType,
         val period: Period,
-        val creationDate: Long
+        val creationDate: Long,
     )
 
     data class Period(
         val retries: Int,
         val periodDays: Int
+    )
+
+    data class HabitCompletion(
+        val uuid: UUID,
+        val date: Long
     )
 }

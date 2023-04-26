@@ -1,7 +1,7 @@
 package com.talkingfox.composedtrabbithacker.data
 
 import com.talkingfox.composedtrabbithacker.data.room.TokenDAO
-import com.talkingfox.composedtrabbithacker.data.room.model.Token
+import com.talkingfox.composedtrabbithacker.data.room.model.TokenEntity
 import com.talkingfox.composedtrabbithacker.repository.TokenRepository
 
 class TokenRepositoryImpl(private val dao: TokenDAO): TokenRepository {
@@ -11,6 +11,6 @@ class TokenRepositoryImpl(private val dao: TokenDAO): TokenRepository {
         return r
     }
     override fun updateToken(token: String): Unit {
-        dao.setToken(Token(token))
+        dao.setToken(TokenEntity(token))
     }
 }

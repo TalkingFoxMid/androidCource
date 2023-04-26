@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.*
 
-@Entity(tableName = params.tableName)
-class Habit {
+@Entity(tableName = params.habitsDataTableName)
+class HabitEntity {
     constructor() {
 
     }

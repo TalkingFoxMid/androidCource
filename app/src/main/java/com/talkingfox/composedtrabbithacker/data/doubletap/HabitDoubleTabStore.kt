@@ -2,13 +2,10 @@ package com.talkingfox.composedtrabbithacker.data.doubletap
 
 import com.talkingfox.composedtrabbithacker.data.doubletap.model.HabitDTO
 import com.talkingfox.composedtrabbithacker.data.doubletap.model.UuidDTO
-import com.talkingfox.composedtrabbithacker.data.doubletap.model.lenses
-import com.talkingfox.composedtrabbithacker.domain.HabitRemoteStore
-import com.talkingfox.composedtrabbithacker.domain.Habits
+import com.talkingfox.composedtrabbithacker.repository.ShortHabitRemoteStore
 import retrofit2.Retrofit
-import java.util.UUID
 
-class HabitDoubleTapStore(private val rf: Retrofit): HabitRemoteStore {
+class ShortHabitDoubleTapStore(private val rf: Retrofit): ShortHabitRemoteStore {
     private val api = rf.create(HabitApi::class.java)
 
     override suspend fun habits(token: String): List<HabitDTO> =

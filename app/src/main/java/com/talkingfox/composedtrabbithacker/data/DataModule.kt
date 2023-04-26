@@ -1,8 +1,10 @@
 package com.talkingfox.composedtrabbithacker.data
 
+import com.talkingfox.composedtrabbithacker.data.room.HabitCompletionsDAO
 import com.talkingfox.composedtrabbithacker.data.room.TokenDAO
-import com.talkingfox.composedtrabbithacker.domain.HabitRemoteStore
-import com.talkingfox.composedtrabbithacker.domain.HabitRepository
+import com.talkingfox.composedtrabbithacker.repository.ShortHabitRemoteStore
+import com.talkingfox.composedtrabbithacker.repository.ShortHabitRepository
+import com.talkingfox.composedtrabbithacker.repository.HabitCompletionsRepository
 import com.talkingfox.composedtrabbithacker.repository.TokenRepository
 import dagger.Module
 import dagger.Provides
@@ -17,13 +19,18 @@ class DataModule {
     @Provides
     @Singleton
     fun provideHabitRepository(habitDAO: com.talkingfox.composedtrabbithacker.data.room.HabitDAO,
-                               remoteStore: HabitRemoteStore,
-                               fetchToken: TokenDAO): HabitRepository {
-        return HabitJuggler(habitDAO, remoteStore, fetchToken)
+                               remoteStore: ShortHabitRemoteStore,
+                               fetchToken: TokenDAO): ShortHabitRepository {
+        return ShortHabitDataRepositoryImpl(habitDAO, remoteStore, fetchToken)
     }
 
     @Provides
     @Singleton
     fun provideTokenRepository(tokenDAO: TokenDAO): TokenRepository =
         TokenRepositoryImpl(tokenDAO)
+
+    @Provides
+    @Singleton
+    fun provideCompletionRepository(completionDAO: HabitCompletionsDAO): HabitCompletionsRepository =
+        HabitCompletionsRepositoryImpl(completionDAO)
 }

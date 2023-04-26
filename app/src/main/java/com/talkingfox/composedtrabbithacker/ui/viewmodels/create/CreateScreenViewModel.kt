@@ -1,43 +1,54 @@
 package com.talkingfox.composedtrabbithacker.ui.viewmodels.create
 
 import androidx.lifecycle.*
-import com.talkingfox.composedtrabbithacker.domain.HabitRepository
+import com.talkingfox.composedtrabbithacker.repository.ShortHabitRepository
 import com.talkingfox.composedtrabbithacker.domain.Habits
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 
 @HiltViewModel
-class CreateScreenViewModel @Inject constructor(private val habitRepo: HabitRepository, private val clock: com.talkingfox.composedtrabbithacker.infra.Clock) : ViewModel() {
-    fun habitFromState(id: UUID, s: ModelState.Modifying): Habits.Habit =
-        Habits.Habit(id,
+class CreateScreenViewModel @Inject constructor(private val habitRepo: ShortHabitRepository, private val clock: com.talkingfox.composedtrabbithacker.infra.Clock) : ViewModel() {
+    fun habitDataFromState(s: ModelState.Modifying): Habits.HabitData =
         Habits.HabitData(s.nameTextField, s.descriptionTextField,
-            s.prioritySelect, s.typeSelect, s.period, clock.currentTime()))
+            s.prioritySelect, s.typeSelect, s.period, clock.currentTime())
 
     fun reduce(e: Event): Unit {
         val st = mutableState.value
         when (st) {
-            null -> {
+            ModelState.Uninitialized -> {
                 when(e) {
                     is Event.Initialize -> {
-                        if(!mutableState.isInitialized) {
-                            if(e.habbitId == null) {
-                                mutableState.value = ModelState.Modifying(
-                                    "",
-                                    "",
-                                    Habits.Priority.LOW,
-                                    Habits.HabitType.BAD,
-                                    Habits.Period(0, 0),
-                                    ModelState.OperationType.CreateHabit
-                                )
-                            } else {
-                                mutableState.value = ModelState.ReadyToEdit(e.habbitId)
+                        e.habbitId?.let {
+                            viewModelScope.launch(Dispatchers.IO) {
+                                val habits = habitRepo.listHabits()
+                                habits.find { h -> h.id == it }?.let { ha ->
+                                    viewModelScope.launch {
+                                        mutableState.value = ModelState.Modifying(
+                                            ha.data.name,
+                                            ha.data.description,
+                                            ha.data.priority,
+                                            ha.data.type,
+                                            ha.data.period,
+                                            ModelState.OperationType.EditHabit(ha.id)
+                                        )
+                                    }
+                                }
                             }
-                        } else {}
-
+                        } ?: run {
+                            mutableState.value = ModelState.Modifying(
+                                "",
+                                "",
+                                Habits.Priority.LOW,
+                                Habits.HabitType.BAD,
+                                Habits.Period(0, 0),
+                                ModelState.OperationType.CreateHabit
+                            )
+                        }
                     }
                     else -> {}
                 }
@@ -58,13 +69,15 @@ class CreateScreenViewModel @Inject constructor(private val habitRepo: HabitRepo
                                 is ModelState.OperationType.EditHabit -> {
                                     viewModelScope.launch(Dispatchers.IO) {
                                         println(opType.id)
-                                        habitRepo.replaceHabit(habitFromState(opType.id, st))
+                                        habitDataFromState(st).let {
+                                            habitRepo.replaceHabit(opType.id, it)
+                                        }
                                     }
                                 }
                                 is ModelState.OperationType.CreateHabit -> {
                                     viewModelScope.launch(Dispatchers.IO) {
                                         habitRepo.addHabit(
-                                            habitFromState(UUID.randomUUID(), st)
+                                            habitDataFromState(st)
                                         )
                                     }
                                 }
@@ -83,28 +96,7 @@ class CreateScreenViewModel @Inject constructor(private val habitRepo: HabitRepo
         else -> false
     }
 
-    private val mutableState = MutableLiveData<ModelState>()
-    fun modifiedState(): LiveData<ModelState> {
-        val data = habitRepo.habits().map {
-            list -> when(val st = mutableState.value) {
-            is ModelState.ReadyToEdit -> {
-                list.find { h -> h.id == st.id }?.let { ha ->
-                    mutableState.value = ModelState.Modifying(
-                        ha.data.name,
-                        ha.data.description,
-                        ha.data.priority,
-                        ha.data.type,
-                        ha.data.period,
-                        ModelState.OperationType.EditHabit(ha.id)
-                    )
-                }
-            }
-            else -> {}
-        }
-            list
-        }
-        return data.switchMap { _ -> mutableState }
-    }
+    private val mutableState = MutableStateFlow<ModelState>(ModelState.Uninitialized)
 
-    val state: LiveData<ModelState> = modifiedState()
+    val state: Flow<ModelState> = mutableState
 }

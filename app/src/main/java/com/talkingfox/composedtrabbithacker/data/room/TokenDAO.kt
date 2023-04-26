@@ -1,16 +1,15 @@
 package com.talkingfox.composedtrabbithacker.data.room
 
 import androidx.room.*
-import com.talkingfox.composedtrabbithacker.data.room.model.Habit
-import com.talkingfox.composedtrabbithacker.data.room.model.Token
+import com.talkingfox.composedtrabbithacker.data.room.model.TokenEntity
 
 @Dao
 interface TokenDAO {
 
  @Insert(onConflict = OnConflictStrategy.REPLACE)
- fun setToken(token: Token)
+ fun setToken(tokenEntity: TokenEntity)
 
  @Query("SELECT * from token")
- fun getToken(): List<Token>
+ fun getToken(): List<TokenEntity>
 
 }

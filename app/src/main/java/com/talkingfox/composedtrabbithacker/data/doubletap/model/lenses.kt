@@ -41,22 +41,21 @@ object lenses {
 
     }
 
-    val habitLens: Iso<Habits.Habit, HabitDTO> = object: Iso<Habits.Habit, HabitDTO> {
-        override fun to(a: Habits.Habit): HabitDTO =
+    val habitLens: Iso<Pair<Habits.HabitData, UUID>, HabitDTO> = object: Iso<Pair<Habits.HabitData, UUID>, HabitDTO> {
+        override fun to(a: Pair<Habits.HabitData, UUID>): HabitDTO =
             HabitDTO(
-                uid = a.id.toString(),
-                type = habitTypeLens.to(a.data.type),
-                priority = habitPriorityLens.to(a.data.priority),
-                frequency = a.data.period.periodDays,
-                count = a.data.period.retries,
-                description = a.data.description,
-                title = a.data.name,
-                date = a.data.creationDate
+                uid = a.second.toString(),
+                type = habitTypeLens.to(a.first.type),
+                priority = habitPriorityLens.to(a.first.priority),
+                frequency = a.first.period.periodDays,
+                count = a.first.period.retries,
+                description = a.first.description,
+                title = a.first.name,
+                date = a.first.creationDate
             )
 
-        override fun from(a: HabitDTO): Habits.Habit {
-            return Habits.Habit(
-                id = UUID.fromString(a.uid),
+        override fun from(a: HabitDTO): Pair<Habits.HabitData, UUID> {
+            return Pair(
                 Habits.HabitData(
                     name = a.title,
                     description = a.description,
@@ -64,7 +63,8 @@ object lenses {
                     type = habitTypeLens.from(a.type),
                     period = Habits.Period(a.count, a.frequency),
                     creationDate = a.date
-                )
+                ),
+                UUID.fromString(a.uid)
             )
         }
     }

@@ -1,7 +1,8 @@
 package com.talkingfox.composedtrabbithacker.ui.views.main
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import com.talkingfox.composedtrabbithacker.domain.Habits
@@ -11,15 +12,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.UUID
 private fun colorFromType(type: Habits.HabitType): Color {
     return when (type) {
@@ -59,8 +63,16 @@ private fun CardButtons(isSelected: Boolean, toEdit: () -> Unit, delete: () -> U
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: () -> Unit, delete: () -> Unit, visible: Boolean) {
-    val isSelected = hce.id == selected.value
+fun HabitComposable(habit: Habits.DetailedHabit,
+                    selected: MutableState<UUID?>,
+                    toEdit: () -> Unit,
+                    delete: () -> Unit,
+                    visible: Boolean,
+                    completeWithToastMessage:  ((String) -> Unit) -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+    val ctx = LocalContext.current
+    val short = habit.shortHabit
+    val isSelected = short.id == selected.value
     AnimatedVisibility(visible){
         Card(
             modifier = Modifier
@@ -71,8 +83,8 @@ fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: ()
             shape = RoundedCornerShape(15.dp),
             elevation = 20.dp,
             onClick = {
-                if (selected.value != hce.id) {
-                    selected.value = hce.id
+                if (selected.value != short.id) {
+                    selected.value = short.id
                 } else {
                     selected.value = null
                 }
@@ -82,10 +94,25 @@ fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: ()
                 Row() {
                     Column(
                         Modifier
-                            .background(colorFromType(hce.data.type))
+                            .background(colorFromType(short.data.type))
                             .fillMaxWidth(0.2f)
                             .fillMaxHeight()
+                            , horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
+                        Button(onClick = {
+                            completeWithToastMessage {
+                                coroutineScope.launch {
+                                    Toast.makeText(ctx, it, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                         }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)) {
+                            Icon(
+                                Icons.Filled.Done,
+                                "",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                     Column(
                         Modifier
@@ -93,23 +120,28 @@ fun HabitComposable(hce: Habits.Habit, selected: MutableState<UUID?>, toEdit: ()
                             .fillMaxHeight()
                             .padding(10.dp)
                     ) {
-                        Text(text = hce.data.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
+                        Text(text = short.data.name, fontSize = 25.sp, modifier = Modifier.weight(0.4f))
 
                         AnimatedVisibility(isSelected) {
-                            Text(text = hce.data.description, modifier = Modifier.weight(0.4f))
+                            Text(text = short.data.description, modifier = Modifier.weight(0.4f))
                         }
                         Divider(color = Color.Black, thickness = 1.dp)
                         Row(modifier = Modifier.weight(0.2f)) {
                             Text(
-                                text = hce.data.priority.toString(),
+                                text = short.data.priority.toString(),
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                             Text(
-                                text = hce.data.type.toString(),
+                                text = short.data.type.toString(),
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                             Text(
-                                text = "${hce.data.period.retries} / ${hce.data.period.periodDays}",
+                                text = "${short.data.period.retries} / ${short.data.period.periodDays}",
+                                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                            )
+
+                            Text(
+                                text = "${habit.completions.size} / ${short.data.period.retries}",
                                 modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                             )
                         }
