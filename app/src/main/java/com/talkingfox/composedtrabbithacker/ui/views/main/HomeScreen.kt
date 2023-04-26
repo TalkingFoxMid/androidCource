@@ -1,4 +1,4 @@
-package com.talkingfox.composedtrabbithacker.views.main
+package com.talkingfox.composedtrabbithacker.ui.views.main
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,16 +11,22 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.talkingfox.composedtrabbithacker.domain.Habits
+import com.talkingfox.composedtrabbithacker.repository.TokenRepository
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.Event
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.HomeScreenState
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.HomeScreenViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -32,6 +38,7 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel, navigateCreateHabit: () -> Unit,
     navigateEditHabit: (UUID) -> Unit
 ) {
+    viewModel.reduce(Event.PreloadHabits)
     val sheetState = rememberBottomSheetState(
         initialValue = BottomSheetValue.Collapsed
     )
@@ -39,17 +46,23 @@ fun HomeScreen(
         bottomSheetState = sheetState
     )
     val state = viewModel.state.observeAsState(
-        HomeScreenViewModel.HomeScreenViewModel.HomeScreenState(
+        HomeScreenState(
             listOf()
-        ))
+        )
+    )
+    val refreshing = remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(refreshing.value, {
+        refreshing.value = true
+        viewModel.reduce(Event.ForceReloadHabits {refreshing.value = false})
+
+    })
     val localState = state.value
-    val landings = listOf("All", "Good", "Bad", "Neutral")
+    val landings = listOf("All", "Good", "Bad")
     fun getFilterByIndex(i: Int): (Habits.Habit) -> Boolean {
         return when (i) {
             0 -> { _ -> true }
             1 -> { hce -> hce.data.type == Habits.HabitType.GOOD }
             2 -> { hce -> hce.data.type == Habits.HabitType.BAD }
-            3 -> { hce -> hce.data.type == Habits.HabitType.NEUTRAL }
             else -> { _ -> false }
         }
     }
@@ -103,13 +116,12 @@ fun HomeScreen(
                     }
                 }
 
-
                 Column() {
 
                     Divider(color = Color.Black, thickness = 1.dp)
 
                     HorizontalPager(pageCount = landings.size, state = pagerState) { page ->
-                        Box(modifier = Modifier.fillMaxHeight(0.8f)) {
+                        Box(modifier = Modifier.fillMaxHeight(0.8f).pullRefresh(pullRefreshState)) {
                             val itemsLocal = localState.habits
                             val selected = remember {
                                 mutableStateOf<UUID?>(null)
@@ -120,7 +132,7 @@ fun HomeScreen(
                                         item,
                                         selected,
                                         toEdit = { navigateEditHabit(item.id) },
-                                        delete = { viewModel.reduce(HomeScreenViewModel.HomeScreenViewModel.Events.DeleteHabit(item.id)) },
+                                        delete = { viewModel.reduce(Event.DeleteHabit(item.id)) },
                                         visible = getFilterByIndex(page)(item) && item.data.name.startsWith(
                                             filterName.value
                                         )
@@ -129,6 +141,8 @@ fun HomeScreen(
 
                                 }
                             }
+                            PullRefreshIndicator(refreshing.value, pullRefreshState, Modifier.align(Alignment.TopCenter))
+
                         }
 
                     }

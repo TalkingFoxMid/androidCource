@@ -1,25 +1,28 @@
-package com.talkingfox.composedtrabbithacker.views.main
+package com.talkingfox.composedtrabbithacker.ui.views
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.talkingfox.composedtrabbithacker.CreateHabitView
-import com.talkingfox.composedtrabbithacker.domain.Habits
 import java.util.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.talkingfox.composedtrabbithacker.views.create.CreateScreenViewModel
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.create.CreateScreenViewModel
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.load.LoadViewModel
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.main.HomeScreenViewModel
+import com.talkingfox.composedtrabbithacker.ui.views.load.LoadView
+import com.talkingfox.composedtrabbithacker.ui.views.main.HomeScreen
 
 fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator =
     object: CallbackNavigator {
         val mainRoute = "mainRoute"
         val createHabitRoute = "createHabitRoute"
         val aboutRoute = "aboutRoute"
+        val loadRoute = "loadRoute"
 
-        override fun toMain() {
+        override fun toMainFlushStack() {
             navController.navigate(mainRoute) {
                 popUpTo(0)
             }
@@ -40,7 +43,12 @@ fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator 
 
         @Composable
         override fun GetNavHost(){
-            NavHost(navController = navController, startDestination = mainRoute) {
+            NavHost(navController = navController, startDestination = loadRoute) {
+                composable(loadRoute) {
+                    val vm = hiltViewModel<LoadViewModel>()
+                    LoadView(vm) { navController.navigate(mainRoute) }
+                }
+
                 composable(aboutRoute) {
                     Text(text = stringResource(id = com.talkingfox.composedtrabbithacker.R.string.about_text))
                 }
@@ -51,15 +59,17 @@ fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator 
                         { toEdit(it) })
                 }
 
-                composable(createHabitRoute) {
-                    val viewModel = hiltViewModel<CreateScreenViewModel>()
-                    CreateHabitView(viewModel, { toMain() },null)
-                }
+
+               composable(createHabitRoute) {
+                   val viewModel = hiltViewModel<CreateScreenViewModel>()
+                   CreateHabitView(viewModel, { toMainFlushStack() },null)
+               }
+
 
                 composable("${createHabitRoute}/{habitId}", arguments = listOf(navArgument("habitId"){type = NavType.StringType})) {
                     val habitId = it.arguments?.getString("habitId")
                     val viewModel = hiltViewModel<CreateScreenViewModel>()
-                    CreateHabitView(viewModel, { toMain() }, UUID.fromString(habitId))
+                    CreateHabitView(viewModel, { toMainFlushStack() }, UUID.fromString(habitId))
                 }
             }
         }
@@ -68,7 +78,7 @@ fun buildCallbackNavigator(navController: NavHostController): CallbackNavigator 
 
 
 interface CallbackNavigator {
-    fun toMain(): Unit
+    fun toMainFlushStack(): Unit
     fun toAbout(): Unit
     fun toCreate(): Unit
     fun toEdit(id: UUID): Unit

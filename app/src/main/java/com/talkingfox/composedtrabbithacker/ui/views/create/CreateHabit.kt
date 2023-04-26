@@ -12,7 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.talkingfox.composedtrabbithacker.views.create.*
+import com.talkingfox.composedtrabbithacker.ui.viewmodels.create.*
+import com.talkingfox.composedtrabbithacker.ui.views.create.SelectPeriod
+import com.talkingfox.composedtrabbithacker.ui.views.create.SelectPriority
+import com.talkingfox.composedtrabbithacker.ui.views.create.SelectType
 import java.util.*
 
 @Composable
@@ -22,9 +25,9 @@ fun CreateHabitView(
     habitUUID: UUID?
 ) {
     val state = viewModel.state.observeAsState()
-    viewModel.reduce(CreateScreenViewModel.CreateScreenViewModel.Event.Initialize(habitUUID))
+    viewModel.reduce(Event.Initialize(habitUUID))
     val localState = state.value
-    if (localState != null && localState is CreateScreenViewModel.CreateScreenViewModel.State.Modifying) {
+    if (localState != null && localState is ModelState.Modifying) {
         Column() {
             Column(
                 modifier = Modifier
@@ -42,7 +45,7 @@ fun CreateHabitView(
                     placeholder = { Text(stringResource(id = R.string.create_habbit_name_placeholder)) },
                     onValueChange = {
                         viewModel.reduce(
-                            CreateScreenViewModel.CreateScreenViewModel.Event.SetName(
+                            Event.SetName(
                                 it
                             )
                         )
@@ -54,7 +57,7 @@ fun CreateHabitView(
                     placeholder = { Text(stringResource(id = R.string.create_habbit_description_placeholder)) },
                     onValueChange = {
                         viewModel.reduce(
-                            CreateScreenViewModel.CreateScreenViewModel.Event.SetDesc(
+                            Event.SetDesc(
                                 it
                             )
                         )
@@ -63,7 +66,7 @@ fun CreateHabitView(
 
                 SelectPriority(localState.prioritySelect) {
                     viewModel.reduce(
-                        CreateScreenViewModel.CreateScreenViewModel.Event.SetPriority(
+                        Event.SetPriority(
                             it
                         )
                     )
@@ -72,12 +75,12 @@ fun CreateHabitView(
                 Divider(color = Color.Black, thickness = 1.dp)
 
                 SelectType(localState.typeSelect) {
-                    viewModel.reduce(CreateScreenViewModel.CreateScreenViewModel.Event.SetType(it))
+                    viewModel.reduce(Event.SetType(it))
 
                 }
                 Divider(color = Color.Black, thickness = 1.dp)
                 SelectPeriod(localState.period) {
-                    viewModel.reduce(CreateScreenViewModel.CreateScreenViewModel.Event.SetPeriod(it))
+                    viewModel.reduce(Event.SetPeriod(it))
                 }
 
             }
@@ -87,8 +90,18 @@ fun CreateHabitView(
                     .fillMaxHeight()
             ) {
                 FloatingActionButton(onClick = {
-                    viewModel.reduce(CreateScreenViewModel.CreateScreenViewModel.Event.DoneEdit)
-                    backToMainScreen()
+                    viewModel.reduce(
+                        Event.DoneEdit {
+                            cb -> when(cb) {
+                                is DoneEditResultSuccess -> {
+                                    backToMainScreen()
+                                }
+                                is DoneEditResultError -> {
+
+                                }
+                            }
+                        }
+                    )
                 }) {
                     Icon(Icons.Filled.Check, "", modifier = Modifier.size(30.dp))
                 }

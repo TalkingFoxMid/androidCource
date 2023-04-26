@@ -11,7 +11,7 @@ object Habits {
     }
 
     enum class HabitType {
-        BAD, GOOD, NEUTRAL
+        BAD, GOOD
     }
 
     data class Habit(
@@ -24,7 +24,8 @@ object Habits {
         val description: String,
         val priority: Priority,
         val type: HabitType,
-        val period: Period
+        val period: Period,
+        val creationDate: Long
     )
 
     data class Period(

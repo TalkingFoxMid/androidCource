@@ -29,15 +29,13 @@ object lenses {
         override fun to(a: Habits.HabitType): Int =
             when(a) {
                 Habits.HabitType.BAD -> 0
-                Habits.HabitType.NEUTRAL -> 1
-                Habits.HabitType.GOOD -> 2
+                Habits.HabitType.GOOD -> 1
             }
 
         override fun from(a: Int): Habits.HabitType =
             when(a) {
                 0 -> Habits.HabitType.BAD
-                1 -> Habits.HabitType.NEUTRAL
-                2 -> Habits.HabitType.GOOD
+                1 -> Habits.HabitType.GOOD
                 else -> throw TransformationException("Unknown type with id $a")
             }
 
@@ -46,26 +44,42 @@ object lenses {
     val habitLens: Iso<Habits.Habit, HabitDTO> = object: Iso<Habits.Habit, HabitDTO> {
         override fun to(a: Habits.Habit): HabitDTO =
             HabitDTO(
-                uuid = a.id.toString(),
+                uid = a.id.toString(),
                 type = habitTypeLens.to(a.data.type),
                 priority = habitPriorityLens.to(a.data.priority),
                 frequency = a.data.period.periodDays,
                 count = a.data.period.retries,
                 description = a.data.description,
                 title = a.data.name,
-                date = 0
+                date = a.data.creationDate
             )
 
-        override fun from(a: HabitDTO): Habits.Habit =
-            Habits.Habit(
-                id = UUID.fromString(a.uuid),
+        override fun from(a: HabitDTO): Habits.Habit {
+            return Habits.Habit(
+                id = UUID.fromString(a.uid),
                 Habits.HabitData(
                     name = a.title,
                     description = a.description,
                     priority = habitPriorityLens.from(a.priority),
                     type = habitTypeLens.from(a.type),
-                    period = Habits.Period(a.count, a.frequency)
+                    period = Habits.Period(a.count, a.frequency),
+                    creationDate = a.date
                 )
+            )
+        }
+    }
+
+    val habitDataDTO: Lens<Habits.HabitData, HabitDTO> = object: Lens<Habits.HabitData, HabitDTO> {
+        override fun to(f: Habits.HabitData): HabitDTO =
+            HabitDTO(
+                type = habitTypeLens.to(f.type),
+                priority = habitPriorityLens.to(f.priority),
+                frequency = f.period.periodDays,
+                count = f.period.retries,
+                description = f.description,
+                title = f.name,
+                date = 0,
+                uid = null
             )
     }
 

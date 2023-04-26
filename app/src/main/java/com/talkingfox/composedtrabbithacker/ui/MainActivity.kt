@@ -1,12 +1,12 @@
-package com.talkingfox.composedtrabbithacker.views.main
+package com.talkingfox.composedtrabbithacker.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.talkingfox.composedtrabbithacker.domain.HabitRepoInMemoryImpl
+import com.talkingfox.composedtrabbithacker.ui.views.buildCallbackNavigator
+import com.talkingfox.composedtrabbithacker.ui.views.main.App
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
             val navController: NavHostController = rememberNavController()
             val callbackNavigator = buildCallbackNavigator(navController)
 
-            App({ callbackNavigator.toAbout() }, { callbackNavigator.toMain() }) {
+            App({ callbackNavigator.toAbout() }, { callbackNavigator.toMainFlushStack() }) {
                 callbackNavigator.GetNavHost()
             }
         }

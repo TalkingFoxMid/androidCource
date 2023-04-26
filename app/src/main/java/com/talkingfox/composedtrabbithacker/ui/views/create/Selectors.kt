@@ -1,4 +1,4 @@
-package com.talkingfox.composedtrabbithacker.views.create
+package com.talkingfox.composedtrabbithacker.ui.views.create
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -54,7 +54,7 @@ fun SelectPriority(priority: Habits.Priority, setPriority: (Habits.Priority) -> 
 
 @Composable
 fun SelectType(type: Habits.HabitType, setType: (Habits.HabitType) -> Unit) {
-    val variance = listOf(Habits.HabitType.NEUTRAL, Habits.HabitType.BAD, Habits.HabitType.GOOD)
+    val variance = listOf(Habits.HabitType.BAD, Habits.HabitType.GOOD)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = stringResource(id = R.string.create_habbit_select_type), fontSize = 20.sp)
         Row() {

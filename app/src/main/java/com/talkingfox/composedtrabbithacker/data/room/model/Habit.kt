@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.*
 
-@Entity(tableName = "habits")
+@Entity(tableName = params.tableName)
 class Habit {
     constructor() {
 
@@ -16,7 +16,8 @@ class Habit {
                 _priority: String,
                 _type: String,
                 _periodDays: Int,
-                _retries: Int) {
+                _retries: Int,
+                _creationDate: Long) {
         uuid = _uuid
         name = _name
         description = _description
@@ -24,6 +25,7 @@ class Habit {
         type = _type
         periodDays = _periodDays
         retries = _retries
+        creationDate = _creationDate
     }
     @PrimaryKey
     @ColumnInfo(name = "uuid")
@@ -46,5 +48,8 @@ class Habit {
 
     @ColumnInfo(name = "retries")
     var retries: Int = 0
+
+    @ColumnInfo(name = "date")
+    var creationDate: Long = 0
 
 }

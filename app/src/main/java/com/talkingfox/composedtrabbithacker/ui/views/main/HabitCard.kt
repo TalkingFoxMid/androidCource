@@ -1,4 +1,4 @@
-package com.talkingfox.composedtrabbithacker.views.main
+package com.talkingfox.composedtrabbithacker.ui.views.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.MutatePriority
@@ -25,13 +25,11 @@ private fun colorFromType(type: Habits.HabitType): Color {
     return when (type) {
         Habits.HabitType.BAD -> Color.Red
         Habits.HabitType.GOOD -> Color.Green
-        Habits.HabitType.NEUTRAL -> Color.Gray
     }
 }
 
 @Composable
 private fun CardButtons(isSelected: Boolean, toEdit: () -> Unit, delete: () -> Unit) {
-
         Column() {
             AnimatedVisibility(
                 isSelected

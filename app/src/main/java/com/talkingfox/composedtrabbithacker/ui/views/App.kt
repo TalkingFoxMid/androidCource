@@ -1,4 +1,4 @@
-package com.talkingfox.composedtrabbithacker.views.main
+package com.talkingfox.composedtrabbithacker.ui.views.main
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column

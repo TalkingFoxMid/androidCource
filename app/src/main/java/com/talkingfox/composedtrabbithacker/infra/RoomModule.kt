@@ -1,6 +1,7 @@
 package com.talkingfox.composedtrabbithacker.infra
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Room
 import com.talkingfox.composedtrabbithacker.data.room.AppDatabase
 import dagger.Module
@@ -21,5 +22,16 @@ class RoomModule {
             AppDatabase::class.java,
             "RssReader"
         ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideClock(@ApplicationContext appContext: Context): Clock {
+        return object: Clock {
+            override fun currentTime(): Long {
+                return System.currentTimeMillis()
+            }
+
+        }
     }
 }
